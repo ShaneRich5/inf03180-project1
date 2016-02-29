@@ -14,7 +14,7 @@ class User(db.Model):
 		self.last_name = last_name
 		self.gender = gender
 		self.userid = userid
-		self.age = age 
+		self.age = age
 		self.image = image
 
 	def __repr__(self):
