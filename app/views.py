@@ -1,5 +1,5 @@
 from app import app, db
-from flask import render_template, request, url_for
+from flask import render_template, request, url_for, redirect, send_from_directory, jsonify
 from werkzeug import secure_filename
 from app.models import User 
 from app.forms import UserForm
@@ -14,6 +14,7 @@ def home():
 
 @app.route('/profile', methods=['GET', 'POST'])
 def new_profile():
+
 	if request.method == 'GET':
 		""" display user form here """
 		form = UserForm()
@@ -22,34 +23,48 @@ def new_profile():
 		first_name = request.form['first_name']
 		last_name = request.form['last_name']
 		gender = request.form['gender']
-		userid = generate_id()
+		userid = str(generate_id())
 		age = request.form['age']
 		image = request.files['image']
+		filename = image.filename.lower()
+		path = os.path.join("static", "filefolder", secure_filename(filename))
 
-		filename = image.filename
-		image.save(os.path.join("filefolder", filename))
+		image.save(path)
 
-		# user = User(first_name, last_name, userid, 'M', 21, )
-		return first_name
-		# return render_template('show_profile.html')
+		user = User(first_name, last_name, userid, gender, 21, filename)
+
+		db.session.add(user)
+		db.session.commit()
+
+		# return users to list of profiles
+		return redirect(url_for('all_profiles'))
 
 @app.route('/profiles', methods=['GET', 'POST'])
 def all_profiles():
+	""" List all profiles """
+
 	users = User.query.all()
 
 	if request.method == 'GET':
 		return render_template('list_profiles.html', users=users)
 	elif request.method == 'POST':
-		# return json
-		return None
+		return transform_user(users=users)
 
-@app.route('/profile/<userid>', methods=['GET', 'POST'])
-def show_profile(userid):
+@app.route('/profile/<id>', methods=['GET', 'POST'])
+def show_profile(id):
+	""" Display individual profiles """
+	
+	user = retreive_user(id)
+
 	if request.method == 'GET':
-		return render_template('show_profile.html')
+		return render_template('show_profile.html', user=user)
 	elif request.method == 'POST':
-		# return json
-		return None
+		return transform_user(user)
+
+@app.route('/img/<path>')
+def serve_file(path):
+	dir = os.path.join(app.root_path, "../filefolder")
+	return send_from_directory(dir, path)
 
 @app.after_request
 def add_header(response):
@@ -68,7 +83,22 @@ def page_not_found(error):
 	# uncomment this whenever i make it lol
 	# return render_template('404.html'), 404
 
-app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT' # temporary secret key
+
+"""
+	Private helper functions
+"""
+
+def transform_user(user):
+	return jsonify(user_id=user.userid,
+			first_name=user.first_name,
+			last_name=user.last_name,
+			sex=user.gender,
+			age=user.age,
+			image=user.image)
 
 def generate_id():
 	return 620000000 + randint(0, 99999)
+
+def retreive_user(id):
+	return User.query.filter(User.id == id).first()
