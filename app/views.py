@@ -7,6 +7,10 @@ from app.forms import UserForm
 import os
 from random import randint
 
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(APP_ROOT, 'static/filefolder/')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 @app.route('/')
 def home():
 	""" Render the home page """
@@ -26,11 +30,10 @@ def new_profile():
 		userid = str(generate_id())
 		age = request.form['age']
 		image = request.files['image']
-		filename = image.filename.lower()
-		path = os.path.join("static", "filefolder") + "/" + secure_filename(filename)
 
-		image.save(path)
-
+		filename = secure_filename(image.filename).lower()
+		image.save(app.config['UPLOAD_FOLDER'] +  filename)
+	
 		user = User(first_name, last_name, userid, gender, 21, filename)
 
 		db.session.add(user)
@@ -47,7 +50,7 @@ def all_profiles():
 
 	if request.method == 'GET':
 		return render_template('list_profiles.html', users=users)
-	elif request.method == 'POST':
+	elif request.method == 'POST' or ('Content-Type' in request.headers['Content-Type'] == 'application/json'):
 		return transform_user(users=users)
 
 @app.route('/profile/<id>', methods=['GET', 'POST'])

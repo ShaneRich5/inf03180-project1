@@ -7,7 +7,7 @@ class User(db.Model):
 	userid = db.Column(db.String(10), unique=True)
 	gender = db.Column(db.String(10))
 	age =db.Column(db.Integer)
-	image = db.Column(db.String(80), unique=True)
+	image = db.Column(db.String(80))
 
 	def __init__(self, first_name, last_name, userid, gender, age, image):
 		self.first_name = first_name

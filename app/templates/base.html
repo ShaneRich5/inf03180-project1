@@ -11,6 +11,14 @@
 	{% block css %} {% endblock %}
 </head>
 <body>
+	<nav>
+		<div class="nav-wrapper">
+			<a href="{{ url_for('home') }}" class="brand-logo">Home</a>
+			<ul id="nav-mobile" class="right hide-on-med-and-down">
+				<li><a href="{{ url_for('all_profiles') }}">Profiles</a></li>
+			</ul>
+		</div>
+	</nav>
 	
 	{% block main %} {% endblock %}
 
