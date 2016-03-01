@@ -27,7 +27,7 @@ def new_profile():
 		age = request.form['age']
 		image = request.files['image']
 		filename = image.filename.lower()
-		path = os.path.join("static", "filefolder", secure_filename(filename))
+		path = os.path.join("static", "filefolder") + "/" + secure_filename(filename)
 
 		image.save(path)
 
